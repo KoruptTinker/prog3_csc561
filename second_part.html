@@ -8,20 +8,60 @@
     <script type="text/javascript" src="second_part.js"></script>
     <style>
       body {
+        margin: 0;
+        padding: 0;
         font-family: Arial, sans-serif;
-        display: flex;
-        gap: 20px;
-        padding: 20px;
         background-color: #f0f0f0;
+        overflow: hidden;
+      }
+      #canvasContainer {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      canvas {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       }
       #controls {
+        position: fixed;
+        top: 20px;
+        left: 20px;
         background-color: white;
         padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         width: 320px;
-        max-width: 320px;
-        flex-shrink: 0;
+        max-width: calc(100vw - 80px);
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+        z-index: 1000;
+      }
+      #controls.hidden {
+        transform: translateX(-380px);
+      }
+      #toggleControls {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background-color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        cursor: pointer;
+        font-size: 20px;
+        z-index: 999;
+        transition: transform 0.3s ease, left 0.3s ease;
+      }
+      #toggleControls.controls-visible {
+        left: 380px;
+      }
+      #toggleControls:hover {
+        background-color: #f0f0f0;
       }
       button {
         padding: 10px 20px;
@@ -39,22 +79,61 @@
       .navButton:hover {
         background-color: #555;
       }
-      canvas {
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      }
     </style>
   </head>
 
   <body onload="main();">
+    <button id="toggleControls" class="controls-visible" onclick="toggleControlPanel()">☰</button>
+    
     <div id="controls">
       <h2 style="margin-top: 0;">Second Part</h2>
       <p style="color: #666;">This part displays a static scene with Blinn-Phong shading.</p>
+      
+      <div style="background-color: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 16px;">Canvas Dimensions</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+          <label style="width: 60px; font-weight: bold;">Width:</label>
+          <input type="number" id="canvasWidth" value="800" min="100" max="3840" style="flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+          <label style="width: 60px; font-weight: bold;">Height:</label>
+          <input type="number" id="canvasHeight" value="800" min="100" max="2160" style="flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <button onclick="updateCanvasDimensions()" style="background-color: #9C27B0; color: white; width: 100%;">Apply Dimensions</button>
+      </div>
       
       <button class="navButton" onclick="window.location.href='index.html'">&lt;&lt; First Part</button>
       <button class="navButton" onclick="window.location.href='third_part.html'">Third Part &gt;&gt;</button>
     </div>
     
-    <canvas id="myWebGLCanvas" width="800" height="800"></canvas>
+    <div id="canvasContainer">
+      <canvas id="myWebGLCanvas" width="800" height="800"></canvas>
+    </div>
+
+    <script>
+      function toggleControlPanel() {
+        const controls = document.getElementById('controls');
+        const toggleBtn = document.getElementById('toggleControls');
+        controls.classList.toggle('hidden');
+        toggleBtn.classList.toggle('controls-visible');
+        toggleBtn.textContent = controls.classList.contains('hidden') ? '☰' : '✕';
+      }
+
+      function updateCanvasDimensions() {
+        const width = parseInt(document.getElementById('canvasWidth').value);
+        const height = parseInt(document.getElementById('canvasHeight').value);
+        const canvas = document.getElementById('myWebGLCanvas');
+        
+        if (width > 0 && height > 0) {
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Reinitialize the scene with new dimensions
+          if (typeof main === 'function') {
+            main();
+          }
+        }
+      }
+    </script>
   </body>
 </html>

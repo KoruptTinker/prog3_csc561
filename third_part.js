@@ -105,6 +105,7 @@ function setupWebGL() {
     if (gl == null) {
       throw "unable to create gl context -- is your browser gl ready?";
     } else {
+      gl.viewport(0, 0, canvas.width, canvas.height); // set viewport to match canvas dimensions
       gl.clearColor(0.0, 0.0, 0.0, 1.0); // use black when we clear the frame buffer
       gl.clearDepth(1.0); // use max when we clear the depth buffer
       gl.enable(gl.DEPTH_TEST); // use hidden surface removal (with zbuffering)
@@ -346,8 +347,10 @@ function renderTriangles() {
   viewMat = mat4.create();
   mat4.lookAt(viewMat, Eye, Target, ViewUp);
   // Calculations for projectMat 
+  var canvas = document.getElementById("myWebGLCanvas");
+  var aspectRatio = canvas.width / canvas.height;
   projectionMat = mat4.create();
-  mat4.perspective(projectionMat, Math.PI / 2, 1.0, 0.01, 100);
+  mat4.perspective(projectionMat, Math.PI / 2, aspectRatio, 0.01, 100);
   // Calculations for model matrix 
   modelMat = mat4.create();
   gl.uniformMatrix4fv(viewMatUniform, false, viewMat);
