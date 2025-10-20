@@ -3,11 +3,11 @@
 const WIN_Z = 0;  // default graphics window z coord in world space
 const WIN_LEFT = 0; const WIN_RIGHT = 1;  // default left and right x coords in world space
 const WIN_BOTTOM = 0; const WIN_TOP = 1;  // default top and bottom y coords in world space
-const INPUT_TRIANGLES_URL = "https://korupttinker.github.io/prog3_csc561/triangles2.json"; // triangles file loc
+const INPUT_TRIANGLES_URL = "https://korupttinker.github.io/prog3_csc561/scene_triangles_deadpool.json"; // triangles file loc
 const INPUT_ELLIPSOIDS_URL = "https://ncsucgclass.github.io/prog3/ellipsoids.json";
-const INPUT_LIGHT_URL = "https://ncsucgclass.github.io/prog3/lights.json";
+const INPUT_LIGHT_URL = "https://korupttinker.github.io/prog3_csc561/lights.json";
 //const INPUT_SPHERES_URL = "https://ncsucgclass.github.io/prog3/spheres.json"; // spheres file loc
-var Eye = new vec4.fromValues(0.5, 0.5, -0.5, 1.0); // default eye position in world space
+var Eye = new vec4.fromValues(2.3, 2.165, 1.405, 1.0); // default eye position in world space
 var ViewUp = new vec4.fromValues(0.0, 1.0, 0.0, 1.0);
 
 /* webgl globals */
@@ -60,7 +60,7 @@ var modelMatUniform;
 
 var indexBuffer;
 var indexArray = [];
-const Target = [0.5, 0.5, 0];
+var Target = [1.351, 1.559, 0.610];
 const distanceFromScreen = 0.5;
 var yawAngle = 0;
 var pitchAngle = 0;
@@ -193,11 +193,30 @@ function loadTriangles() {
 } 
 
 function loadLights() {
-  // Hardcoded light values
-  lightPos = [-0.5, 1.5, -0.5];
-  lightDiffuse = [1.0, 1.0, 1.0];
-  lightAmbient = [1.0, 1.0, 1.0];
-  lightSpec = [1.0, 1.0, 1.0];
+  var inputLights = getJSONFile(INPUT_LIGHT_URL, "lights");
+  if (inputLights != String.null && inputLights.length > 0) {
+    var light = inputLights[0];
+    lightPos = [light.x, light.y, light.z];
+    lightDiffuse = light.diffuse;
+    lightAmbient = light.ambient;
+    lightSpec = light.specular;
+    console.log("Light loaded from JSON - Position:", lightPos);
+  } else {
+    // Fallback to hardcoded values if JSON load fails
+    lightPos = [4.120, 3, 1.135];
+    lightDiffuse = [1.0, 1.0, 1.0];
+    lightAmbient = [1.0, 1.0, 1.0];
+    lightSpec = [1.0, 1.0, 1.0];
+    console.log("Using fallback light values");
+  }
+  
+  // Initialize light input fields with loaded values (if they exist)
+  var lightX = document.getElementById("lightX");
+  var lightY = document.getElementById("lightY");
+  var lightZ = document.getElementById("lightZ");
+  if (lightX) lightX.value = lightPos[0];
+  if (lightY) lightY.value = lightPos[1];
+  if (lightZ) lightZ.value = lightPos[2];
 }
 
 // setup the webGL shaders
@@ -342,6 +361,10 @@ function renderTriangles() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
   var bgColor = 0;
   gl.clearColor(bgColor, 0, 0, 1.0);
+  
+  // Update the viewing coordinates display in real-time
+  updateViewingCoordinatesDisplay();
+  
   requestAnimationFrame(renderTriangles);
   // vertex buffer: activate and feed into vertex shader
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // activate
@@ -399,7 +422,154 @@ function rotate(angle, axis, setIdx) {
   translate(-TriangleSetInfo[setIdx].avgPos[0], -TriangleSetInfo[setIdx].avgPos[1], -TriangleSetInfo[setIdx].avgPos[2], setIdx);
 }
 
+// Function to update the display of current viewing coordinates
+function updateViewingCoordinatesDisplay() {
+  // Check if HTML elements exist before updating (for backwards compatibility)
+  var currentEye = document.getElementById("currentEye");
+  var currentTarget = document.getElementById("currentTarget");
+  var currentViewUp = document.getElementById("currentViewUp");
+  var currentLight = document.getElementById("currentLight");
+  
+  if (currentEye) {
+    currentEye.textContent = 
+      `X: ${Eye[0].toFixed(3)}, Y: ${Eye[1].toFixed(3)}, Z: ${Eye[2].toFixed(3)}`;
+  }
+  
+  if (currentTarget) {
+    currentTarget.textContent = 
+      `X: ${Target[0].toFixed(3)}, Y: ${Target[1].toFixed(3)}, Z: ${Target[2].toFixed(3)}`;
+  }
+  
+  if (currentViewUp) {
+    currentViewUp.textContent = 
+      `X: ${ViewUp[0].toFixed(3)}, Y: ${ViewUp[1].toFixed(3)}, Z: ${ViewUp[2].toFixed(3)}`;
+  }
+  
+  if (currentLight) {
+    currentLight.textContent = 
+      `X: ${lightPos[0].toFixed(3)}, Y: ${lightPos[1].toFixed(3)}, Z: ${lightPos[2].toFixed(3)}`;
+  }
+}
+
+// Function to update viewing coordinates from webpage inputs
+function updateViewingCoordinates() {
+  // Check if input elements exist before accessing them
+  var eyeX = document.getElementById("eyeX");
+  var eyeY = document.getElementById("eyeY");
+  var eyeZ = document.getElementById("eyeZ");
+  var targetX = document.getElementById("targetX");
+  var targetY = document.getElementById("targetY");
+  var targetZ = document.getElementById("targetZ");
+  var viewUpX = document.getElementById("viewUpX");
+  var viewUpY = document.getElementById("viewUpY");
+  var viewUpZ = document.getElementById("viewUpZ");
+  var lightX = document.getElementById("lightX");
+  var lightY = document.getElementById("lightY");
+  var lightZ = document.getElementById("lightZ");
+  
+  if (!eyeX || !eyeY || !eyeZ) return;
+  
+  // Get values from input fields
+  Eye[0] = parseFloat(eyeX.value);
+  Eye[1] = parseFloat(eyeY.value);
+  Eye[2] = parseFloat(eyeZ.value);
+  
+  Target[0] = parseFloat(targetX.value);
+  Target[1] = parseFloat(targetY.value);
+  Target[2] = parseFloat(targetZ.value);
+  
+  ViewUp[0] = parseFloat(viewUpX.value);
+  ViewUp[1] = parseFloat(viewUpY.value);
+  ViewUp[2] = parseFloat(viewUpZ.value);
+  
+  // Get light position from input fields
+  if (lightX && lightY && lightZ) {
+    lightPos[0] = parseFloat(lightX.value);
+    lightPos[1] = parseFloat(lightY.value);
+    lightPos[2] = parseFloat(lightZ.value);
+  }
+  
+  // Reset angles based on new eye and target positions
+  var dx = Target[0] - Eye[0];
+  var dy = Target[1] - Eye[1];
+  var dz = Target[2] - Eye[2];
+  yawAngle = Math.atan2(dx, dz);
+  pitchAngle = Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+  
+  // Update the display
+  updateViewingCoordinatesDisplay();
+  
+  console.log("View updated - Eye:", Eye, "Target:", Target, "ViewUp:", ViewUp, "Light:", lightPos);
+}
+
+// Function to reset viewing coordinates to default values
+function resetViewingCoordinates() {
+  // Set default values
+  Eye = new vec4.fromValues(2.3, 2.165, 1.405, 1.0);
+  
+  Target = [1.351, 1.559, 0.610];;
+  
+  ViewUp[0] = 0.0;
+  ViewUp[1] = 1.0;
+  ViewUp[2] = 0.0;
+  
+  lightPos[0] = 4.120;
+  lightPos[1] = 3;
+  lightPos[2] = 1.135;
+  
+  // Recalculate yaw and pitch angles based on reset Eye and Target positions
+  var dx = Target[0] - Eye[0];
+  var dy = Target[1] - Eye[1];
+  var dz = Target[2] - Eye[2];
+  yawAngle = Math.atan2(dx, dz);
+  pitchAngle = Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+
+  for(var i = 0; i < TriangleSetInfo.length; i++) {
+    modelMat[i] = mat4.create();
+  }
+  selectedSet = -1;
+  
+  // Update input fields to reflect default values (if they exist)
+  var eyeX = document.getElementById("eyeX");
+  var eyeY = document.getElementById("eyeY");
+  var eyeZ = document.getElementById("eyeZ");
+  var targetX = document.getElementById("targetX");
+  var targetY = document.getElementById("targetY");
+  var targetZ = document.getElementById("targetZ");
+  var viewUpX = document.getElementById("viewUpX");
+  var viewUpY = document.getElementById("viewUpY");
+  var viewUpZ = document.getElementById("viewUpZ");
+  var lightX = document.getElementById("lightX");
+  var lightY = document.getElementById("lightY");
+  var lightZ = document.getElementById("lightZ");
+  
+  if (eyeX) eyeX.value = Eye[0];
+  if (eyeY) eyeY.value = Eye[1];
+  if (eyeZ) eyeZ.value = Eye[2];
+  if (targetX) targetX.value = Target[0];
+  if (targetY) targetY.value = Target[1];
+  if (targetZ) targetZ.value = Target[2];
+  if (viewUpX) viewUpX.value = ViewUp[0];
+  if (viewUpY) viewUpY.value = ViewUp[1];
+  if (viewUpZ) viewUpZ.value = ViewUp[2];
+  if (lightX) lightX.value = lightPos[0];
+  if (lightY) lightY.value = lightPos[1];
+  if (lightZ) lightZ.value = lightPos[2];
+  
+  // Update the display
+  updateViewingCoordinatesDisplay();
+  
+  console.log("View reset to default values");
+}
+
 function main() {
+  // Initialize yaw and pitch angles based on initial Eye and Target positions
+  var dx = Target[0] - Eye[0];
+  var dy = Target[1] - Eye[1];
+  var dz = Target[2] - Eye[2];
+  yawAngle = Math.atan2(dx, dz);
+  pitchAngle = Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+  
   document.addEventListener('keydown', function (e) {
     switch (e.key) {
       case "a":
@@ -428,23 +598,31 @@ function main() {
         break;
       case "A":
         yawAngle += 0.015;
-        Target[0] = Eye[0] + Math.sin(yawAngle);
-        Target[2] = Eye[2] + Math.cos(yawAngle);
+        // Use spherical coordinates: both yaw and pitch determine direction
+        Target[0] = Eye[0] + Math.sin(yawAngle) * Math.cos(pitchAngle);
+        Target[1] = Eye[1] + Math.sin(pitchAngle);
+        Target[2] = Eye[2] + Math.cos(yawAngle) * Math.cos(pitchAngle);
         break;
       case "D":
         yawAngle -= 0.015;
-        Target[0] = Eye[0] + Math.sin(yawAngle);
-        Target[2] = Eye[2] + Math.cos(yawAngle);
+        // Use spherical coordinates: both yaw and pitch determine direction
+        Target[0] = Eye[0] + Math.sin(yawAngle) * Math.cos(pitchAngle);
+        Target[1] = Eye[1] + Math.sin(pitchAngle);
+        Target[2] = Eye[2] + Math.cos(yawAngle) * Math.cos(pitchAngle);
         break;
       case "W":
         pitchAngle += 0.03;
+        // Use spherical coordinates: both yaw and pitch determine direction
+        Target[0] = Eye[0] + Math.sin(yawAngle) * Math.cos(pitchAngle);
         Target[1] = Eye[1] + Math.sin(pitchAngle);
-        Target[2] = Eye[2] + Math.cos(pitchAngle);
+        Target[2] = Eye[2] + Math.cos(yawAngle) * Math.cos(pitchAngle);
         break;
       case "S":
         pitchAngle -= 0.03;
+        // Use spherical coordinates: both yaw and pitch determine direction
+        Target[0] = Eye[0] + Math.sin(yawAngle) * Math.cos(pitchAngle);
         Target[1] = Eye[1] + Math.sin(pitchAngle);
-        Target[2] = Eye[2] + Math.cos(pitchAngle);
+        Target[2] = Eye[2] + Math.cos(yawAngle) * Math.cos(pitchAngle);
         break;
       case "ArrowRight":
         if(selectedSet >= 0) {
@@ -531,18 +709,7 @@ function main() {
         }
         break;
       case "Escape":
-        Eye[0] = 0.5;
-        Eye[1] = 0.5;
-        Eye[2] = -0.5;
-        Target[0] = 0.5;
-        Target[1] = 0.5;
-        Target[2] = 0;
-        pitchAngle = 0;
-        yawAngle = 0;
-        for(var i = 0; i < TriangleSetInfo.length; i++) {
-          modelMat[i] = mat4.create();
-        }
-        selectedSet = -1;
+        resetViewingCoordinates();
         break;
     }
   });

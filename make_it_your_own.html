@@ -2,14 +2,266 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Prog 3</title>
+    <title>Prog 3 - Make It Your Own</title>
 
     <script type="text/javascript" src="gl-matrix-min.js"></script>
     <script type="text/javascript" src="make_it_your_own.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      #controls {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 320px;
+        max-width: 320px;
+        flex-shrink: 0;
+      }
+      .control-group {
+        margin-bottom: 20px;
+      }
+      .control-group h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 16px;
+      }
+      .input-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .input-row label {
+        width: 30px;
+        font-weight: bold;
+      }
+      .input-row input {
+        flex: 1;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px 5px 5px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+      #updateView {
+        background-color: #4CAF50;
+        color: white;
+      }
+      #updateView:hover {
+        background-color: #45a049;
+      }
+      #resetView {
+        background-color: #2196F3;
+        color: white;
+      }
+      #resetView:hover {
+        background-color: #0b7dda;
+      }
+      #navButton {
+        background-color: #666;
+        color: white;
+      }
+      #navButton:hover {
+        background-color: #555;
+      }
+      canvas {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+    </style>
   </head>
 
   <body onload="main();">
+    <div id="controls">
+      <h2 style="margin-top: 0;">Make It Your Own</h2>
+      <p style="color: #666;">Custom enhancements with dynamic lighting and interactive controls.</p>
+      
+      <div class="control-group" style="background-color: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 14px;">⌨️ Keyboard Controls</h3>
+        <div style="margin-bottom: 12px;">
+          <strong style="font-size: 12px; color: #666;">Camera Movement (lowercase):</strong>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px; margin-top: 6px;">
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">w</kbd>
+            <span style="line-height: 28px;">Move Forward (Z+)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">s</kbd>
+            <span style="line-height: 28px;">Move Backward (Z-)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">a</kbd>
+            <span style="line-height: 28px;">Move Left (X-)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">d</kbd>
+            <span style="line-height: 28px;">Move Right (X+)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">q</kbd>
+            <span style="line-height: 28px;">Move Up (Y+)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">e</kbd>
+            <span style="line-height: 28px;">Move Down (Y-)</span>
+          </div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <strong style="font-size: 12px; color: #666;">Camera Rotation (UPPERCASE):</strong>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px; margin-top: 6px;">
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">W</kbd>
+            <span style="line-height: 28px;">Look Up (Pitch+)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">S</kbd>
+            <span style="line-height: 28px;">Look Down (Pitch-)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">A</kbd>
+            <span style="line-height: 28px;">Look Left (Yaw+)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">D</kbd>
+            <span style="line-height: 28px;">Look Right (Yaw-)</span>
+          </div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <strong style="font-size: 12px; color: #666;">Object Selection:</strong>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px; margin-top: 6px;">
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">→</kbd>
+            <span style="line-height: 28px;">Select Next Object</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">←</kbd>
+            <span style="line-height: 28px;">Select Previous Object</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">Space</kbd>
+            <span style="line-height: 28px;">Deselect Object</span>
+          </div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <strong style="font-size: 12px; color: #666;">Object Translation (lowercase):</strong>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px; margin-top: 6px;">
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">k</kbd>
+            <span style="line-height: 28px;">Move Right (X+)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">;</kbd>
+            <span style="line-height: 28px;">Move Left (X-)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">o</kbd>
+            <span style="line-height: 28px;">Move Forward (Z+)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">l</kbd>
+            <span style="line-height: 28px;">Move Backward (Z-)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">i</kbd>
+            <span style="line-height: 28px;">Move Up (Y+)</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">p</kbd>
+            <span style="line-height: 28px;">Move Down (Y-)</span>
+          </div>
+        </div>
+        <div>
+          <strong style="font-size: 12px; color: #666;">Object Rotation (UPPERCASE):</strong>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px; margin-top: 6px;">
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">K</kbd>
+            <span style="line-height: 28px;">Rotate around Y+</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">:</kbd>
+            <span style="line-height: 28px;">Rotate around Y-</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">O</kbd>
+            <span style="line-height: 28px;">Rotate around X+</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">L</kbd>
+            <span style="line-height: 28px;">Rotate around X-</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">I</kbd>
+            <span style="line-height: 28px;">Rotate around Z+</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">P</kbd>
+            <span style="line-height: 28px;">Rotate around Z-</span>
+            <kbd style="background: #fff; padding: 4px 8px; border-radius: 3px; border: 1px solid #ccc; font-family: monospace;">Esc</kbd>
+            <span style="line-height: 28px;">Reset All</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <h3>Eye Position</h3>
+        <div class="input-row">
+          <label>X:</label>
+          <input type="number" id="eyeX" step="0.1" value="0.5">
+        </div>
+        <div class="input-row">
+          <label>Y:</label>
+          <input type="number" id="eyeY" step="0.1" value="0.5">
+        </div>
+        <div class="input-row">
+          <label>Z:</label>
+          <input type="number" id="eyeZ" step="0.1" value="-0.5">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3>Target Position</h3>
+        <div class="input-row">
+          <label>X:</label>
+          <input type="number" id="targetX" step="0.1" value="0.5">
+        </div>
+        <div class="input-row">
+          <label>Y:</label>
+          <input type="number" id="targetY" step="0.1" value="0.5">
+        </div>
+        <div class="input-row">
+          <label>Z:</label>
+          <input type="number" id="targetZ" step="0.1" value="0">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3>View Up Vector</h3>
+        <div class="input-row">
+          <label>X:</label>
+          <input type="number" id="viewUpX" step="0.1" value="0.0">
+        </div>
+        <div class="input-row">
+          <label>Y:</label>
+          <input type="number" id="viewUpY" step="0.1" value="1.0">
+        </div>
+        <div class="input-row">
+          <label>Z:</label>
+          <input type="number" id="viewUpZ" step="0.1" value="0.0">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3>Light Position</h3>
+        <div class="input-row">
+          <label>X:</label>
+          <input type="number" id="lightX" step="0.1" value="4.120">
+        </div>
+        <div class="input-row">
+          <label>Y:</label>
+          <input type="number" id="lightY" step="0.1" value="3">
+        </div>
+        <div class="input-row">
+          <label>Z:</label>
+          <input type="number" id="lightZ" step="0.1" value="1.135">
+        </div>
+      </div>
+
+      <button id="updateView" onclick="updateViewingCoordinates()">Update View</button>
+      <button id="resetView" onclick="resetViewingCoordinates()">Reset to Default</button>
+      
+      <div class="control-group" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+        <h3>Current Viewing Coordinates</h3>
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px;">
+          <div style="margin-bottom: 10px;">
+            <strong>Eye:</strong><br>
+            <span id="currentEye" style="color: #2196F3;">X: 0.500, Y: 0.500, Z: -0.500</span>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <strong>Target:</strong><br>
+            <span id="currentTarget" style="color: #4CAF50;">X: 0.500, Y: 0.500, Z: 0.000</span>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <strong>ViewUp:</strong><br>
+            <span id="currentViewUp" style="color: #FF9800;">X: 0.000, Y: 1.000, Z: 0.000</span>
+          </div>
+          <div>
+            <strong>Light:</strong><br>
+            <span id="currentLight" style="color: #FFC107;">X: 4.120, Y: 3.000, Z: 1.135</span>
+          </div>
+        </div>
+      </div>
+      
+      <button id="navButton" onclick="window.location.href='fourth_part.html'">&lt;&lt; Fourth Part</button>
+    </div>
+    
     <canvas id="myWebGLCanvas" width="800" height="800"></canvas>
-    <button onclick="window.location.href='fourth_part.html'"><< Fourth Part</button>
   </body>
 </html>

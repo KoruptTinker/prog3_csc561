@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+*.egg-info/
+
+# Generated files
+scene_triangles.json
+
+# Large data files
+*.stl
+
+# OS
+.DS_Store
+

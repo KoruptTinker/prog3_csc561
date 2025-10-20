@@ -365,7 +365,105 @@ function renderTriangles() {
 
 /* MAIN -- HERE is where execution begins after window load */
 
+// Function to update the display of current viewing coordinates
+function updateViewingCoordinatesDisplay() {
+  var currentEye = document.getElementById("currentEye");
+  var currentTarget = document.getElementById("currentTarget");
+  var currentViewUp = document.getElementById("currentViewUp");
+  
+  if (currentEye) {
+    currentEye.textContent = 
+      `X: ${Eye[0].toFixed(3)}, Y: ${Eye[1].toFixed(3)}, Z: ${Eye[2].toFixed(3)}`;
+  }
+  
+  if (currentTarget) {
+    currentTarget.textContent = 
+      `X: ${Target[0].toFixed(3)}, Y: ${Target[1].toFixed(3)}, Z: ${Target[2].toFixed(3)}`;
+  }
+  
+  if (currentViewUp) {
+    currentViewUp.textContent = 
+      `X: ${ViewUp[0].toFixed(3)}, Y: ${ViewUp[1].toFixed(3)}, Z: ${ViewUp[2].toFixed(3)}`;
+  }
+}
+
+// Function to update viewing coordinates from webpage inputs
+function updateViewingCoordinates() {
+  var eyeX = document.getElementById("eyeX");
+  var eyeY = document.getElementById("eyeY");
+  var eyeZ = document.getElementById("eyeZ");
+  var targetX = document.getElementById("targetX");
+  var targetY = document.getElementById("targetY");
+  var targetZ = document.getElementById("targetZ");
+  var viewUpX = document.getElementById("viewUpX");
+  var viewUpY = document.getElementById("viewUpY");
+  var viewUpZ = document.getElementById("viewUpZ");
+  
+  if (!eyeX || !eyeY || !eyeZ) return;
+  
+  Eye[0] = parseFloat(eyeX.value);
+  Eye[1] = parseFloat(eyeY.value);
+  Eye[2] = parseFloat(eyeZ.value);
+  
+  Target[0] = parseFloat(targetX.value);
+  Target[1] = parseFloat(targetY.value);
+  Target[2] = parseFloat(targetZ.value);
+  
+  ViewUp[0] = parseFloat(viewUpX.value);
+  ViewUp[1] = parseFloat(viewUpY.value);
+  ViewUp[2] = parseFloat(viewUpZ.value);
+  
+  updateViewingCoordinatesDisplay();
+  
+  console.log("View updated - Eye:", Eye, "Target:", Target, "ViewUp:", ViewUp);
+}
+
+// Function to reset viewing coordinates to default values
+function resetViewingCoordinates() {
+  Eye[0] = 0.5;
+  Eye[1] = 0.5;
+  Eye[2] = -0.5;
+  
+  Target[0] = 0.5;
+  Target[1] = 0.5;
+  Target[2] = 0;
+  
+  ViewUp[0] = 0.0;
+  ViewUp[1] = 1.0;
+  ViewUp[2] = 0.0;
+  
+  var eyeX = document.getElementById("eyeX");
+  var eyeY = document.getElementById("eyeY");
+  var eyeZ = document.getElementById("eyeZ");
+  var targetX = document.getElementById("targetX");
+  var targetY = document.getElementById("targetY");
+  var targetZ = document.getElementById("targetZ");
+  var viewUpX = document.getElementById("viewUpX");
+  var viewUpY = document.getElementById("viewUpY");
+  var viewUpZ = document.getElementById("viewUpZ");
+  
+  if (eyeX) eyeX.value = Eye[0];
+  if (eyeY) eyeY.value = Eye[1];
+  if (eyeZ) eyeZ.value = Eye[2];
+  if (targetX) targetX.value = Target[0];
+  if (targetY) targetY.value = Target[1];
+  if (targetZ) targetZ.value = Target[2];
+  if (viewUpX) viewUpX.value = ViewUp[0];
+  if (viewUpY) viewUpY.value = ViewUp[1];
+  if (viewUpZ) viewUpZ.value = ViewUp[2];
+  
+  updateViewingCoordinatesDisplay();
+  
+  console.log("View reset to default values");
+}
+
 function main() {
+  var dx = Target[0] - Eye[0];
+  var dy = Target[1] - Eye[1];
+  var dz = Target[2] - Eye[2];
+  yawAngle = Math.atan2(dx, dz);
+  pitchAngle = Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+  
   document.addEventListener('keydown', function (e) {
     switch (e.key) {
       case "a":
@@ -394,23 +492,27 @@ function main() {
         break;
       case "A":
         yawAngle += 0.015;
-        Target[0] = Eye[0] + Math.sin(yawAngle);
-        Target[2] = Eye[2] + Math.cos(yawAngle);
+        Target[0] = Eye[0] + Math.sin(yawAngle) * Math.cos(pitchAngle);
+        Target[1] = Eye[1] + Math.sin(pitchAngle);
+        Target[2] = Eye[2] + Math.cos(yawAngle) * Math.cos(pitchAngle);
         break;
       case "D":
         yawAngle -= 0.015;
-        Target[0] = Eye[0] + Math.sin(yawAngle);
-        Target[2] = Eye[2] + Math.cos(yawAngle);
+        Target[0] = Eye[0] + Math.sin(yawAngle) * Math.cos(pitchAngle);
+        Target[1] = Eye[1] + Math.sin(pitchAngle);
+        Target[2] = Eye[2] + Math.cos(yawAngle) * Math.cos(pitchAngle);
         break;
       case "W":
         pitchAngle += 0.03;
+        Target[0] = Eye[0] + Math.sin(yawAngle) * Math.cos(pitchAngle);
         Target[1] = Eye[1] + Math.sin(pitchAngle);
-        Target[2] = Eye[2] + Math.cos(pitchAngle);
+        Target[2] = Eye[2] + Math.cos(yawAngle) * Math.cos(pitchAngle);
         break;
       case "S":
         pitchAngle -= 0.03;
+        Target[0] = Eye[0] + Math.sin(yawAngle) * Math.cos(pitchAngle);
         Target[1] = Eye[1] + Math.sin(pitchAngle);
-        Target[2] = Eye[2] + Math.cos(pitchAngle);
+        Target[2] = Eye[2] + Math.cos(yawAngle) * Math.cos(pitchAngle);
         break;
       case "Escape":
         Eye[0] = 0.5;
@@ -419,8 +521,11 @@ function main() {
         Target[0] = 0.5;
         Target[1] = 0.5;
         Target[2] = 0;
-        pitchAngle = 0;
-        yawAngle = 0;
+        var dx = Target[0] - Eye[0];
+        var dy = Target[1] - Eye[1];
+        var dz = Target[2] - Eye[2];
+        yawAngle = Math.atan2(dx, dz);
+        pitchAngle = Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
         break;
     }
   })

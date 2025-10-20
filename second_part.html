@@ -6,11 +6,55 @@
 
     <script type="text/javascript" src="gl-matrix-min.js"></script>
     <script type="text/javascript" src="second_part.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      #controls {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 320px;
+        max-width: 320px;
+        flex-shrink: 0;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px 5px 5px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+      .navButton {
+        background-color: #666;
+        color: white;
+      }
+      .navButton:hover {
+        background-color: #555;
+      }
+      canvas {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+    </style>
   </head>
 
   <body onload="main();">
+    <div id="controls">
+      <h2 style="margin-top: 0;">Second Part</h2>
+      <p style="color: #666;">This part displays a static scene with Blinn-Phong shading.</p>
+      
+      <button class="navButton" onclick="window.location.href='index.html'">&lt;&lt; First Part</button>
+      <button class="navButton" onclick="window.location.href='third_part.html'">Third Part &gt;&gt;</button>
+    </div>
+    
     <canvas id="myWebGLCanvas" width="800" height="800"></canvas>
-    <button onclick="window.location.href='index.html'"><< First Part</button>
-    <button onclick="window.location.href='third_part.html'">Third Part >></button>
   </body>
 </html>
