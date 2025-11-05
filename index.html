@@ -20,9 +20,18 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
       }
       canvas {
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      #myImageCanvas {
+        position: absolute;
+        z-index: 0;
+      }
+      #myWebGLCanvas {
+        position: relative;
+        z-index: 1;
       }
       #controls {
         position: fixed;
@@ -87,7 +96,7 @@
     
     <div id="controls">
       <h2 style="margin-top: 0;">First Part</h2>
-      <p style="color: #666;">This part displays a static scene with basic rendering.</p>
+      <p style="color: #666;">This part uses WebGL to render unlit triangles, giving each fragment its textured color. No lighting is performed. The fragment shader is used to find the appropriate color in the texture based on the UV coordinates provided with each triangle set.</p>
       
       <div style="background-color: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
         <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 16px;">Canvas Dimensions</h3>
@@ -106,6 +115,7 @@
     </div>
     
     <div id="canvasContainer">
+      <canvas id="myImageCanvas" width="800" height="800"></canvas>
       <canvas id="myWebGLCanvas" width="800" height="800"></canvas>
     </div>
 
@@ -121,11 +131,24 @@
       function updateCanvasDimensions() {
         const width = parseInt(document.getElementById('canvasWidth').value);
         const height = parseInt(document.getElementById('canvasHeight').value);
-        const canvas = document.getElementById('myWebGLCanvas');
+        const webglCanvas = document.getElementById('myWebGLCanvas');
+        const imageCanvas = document.getElementById('myImageCanvas');
         
         if (width > 0 && height > 0) {
-          canvas.width = width;
-          canvas.height = height;
+          webglCanvas.width = width;
+          webglCanvas.height = height;
+          imageCanvas.width = width;
+          imageCanvas.height = height;
+          
+          // Redraw background image on resized canvas
+          var imageContext = imageCanvas.getContext("2d");
+          var bkgdImage = new Image();
+          bkgdImage.crossOrigin = "Anonymous";
+          bkgdImage.src = "sky.jpg";
+          bkgdImage.onload = function(){
+            var iw = bkgdImage.width, ih = bkgdImage.height;
+            imageContext.drawImage(bkgdImage, 0, 0, iw, ih, 0, 0, width, height);
+          };
           
           // Reinitialize the scene with new dimensions
           if (typeof main === 'function') {
