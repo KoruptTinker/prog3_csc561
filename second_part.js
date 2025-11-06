@@ -68,6 +68,9 @@ var vertexUVAttrib;
 var textureArray = [];
 var textureUniform;
 
+var blendModeUniform;
+var blendMode = 1;
+
 const Target = [0.5, 0.5, 0];
 const distanceFromScreen = 0.5;
 var yawAngle = 0;
@@ -286,6 +289,8 @@ function setupShaders() {
       varying float vColorAlpha;
       varying vec3 vPosition;
 
+      uniform int blendMode;
+
       varying vec2 vUV;
 
       void main(void) {
@@ -302,7 +307,12 @@ function setupShaders() {
         vec3 spec = lightSpec * vColorSpec * specIntensity;
         vec3 finalColor = ambient + diffuse + spec;
         vec4 textureColor = texture2D(uTexture, vUV);
-        gl_FragColor = vec4(textureColor.rgb * finalColor, vColorAlpha);
+        if(blendMode == 1) {
+          gl_FragColor = vec4(textureColor.rgb * finalColor, textureColor.a);
+        } else {
+          vec3 blendedColor = (1.0 - NL) * finalColor + NL * textureColor.rgb;
+          gl_FragColor = vec4(blendedColor, textureColor.a * vColorAlpha);
+        }
       }
   `;
 
@@ -329,6 +339,8 @@ function setupShaders() {
     varying float vColorN;
     varying float vColorAlpha;
     varying vec3 vPosition;
+
+    uniform int blendMode;
 
     varying vec2 vUV;
 
@@ -401,6 +413,7 @@ function setupShaders() {
         lightSpecUniform = gl.getUniformLocation(shaderProgram, "lightSpec");
         eyePositionUniform = gl.getUniformLocation(shaderProgram, "eyePosition");
         textureUniform = gl.getUniformLocation(shaderProgram, "uTexture");
+        blendModeUniform = gl.getUniformLocation(shaderProgram, "blendMode");
       } // end if no shader program link errors
     } // end if no compile errors
   } // end try
@@ -456,6 +469,7 @@ function renderTriangles() {
   gl.uniform3fv(eyePositionUniform, [Eye[0], Eye[1], Eye[2]]);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
   gl.uniform1i(textureUniform, 0); // Tell shader to use texture unit 0
+  gl.uniform1i(blendModeUniform, blendMode);
   for (var itr = 0; itr < TriangleSetInfo.length; itr++) {
     gl.uniformMatrix4fv(modelMatUniform, false, modelMat[itr]);
     // Bind the correct texture for this triangle set
@@ -738,6 +752,12 @@ function main() {
         if(selectedSet >= 0) {
           rotate(-0.02, [0, 0, 1], selectedSet);
         }
+        break;
+      case "b":
+        blendMode = 1 - blendMode;
+        break;
+      case "B":
+        blendMode = 1 - blendMode;
         break;
       case "Escape":
         Eye[0] = 0.5;
