@@ -302,7 +302,7 @@ function setupShaders() {
         vec3 spec = lightSpec * vColorSpec * specIntensity;
         vec3 finalColor = ambient + diffuse + spec;
         vec4 textureColor = texture2D(uTexture, vUV);
-        gl_FragColor = textureColor * vec4(finalColor, 1.0);
+        gl_FragColor = vec4(textureColor.rgb * finalColor, vColorAlpha);
       }
   `;
 
