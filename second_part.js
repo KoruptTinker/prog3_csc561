@@ -69,7 +69,7 @@ var textureArray = [];
 var textureUniform;
 
 var blendModeUniform;
-var blendMode = 1;
+var blendMode = 0;
 
 const Target = [0.5, 0.5, 0];
 const distanceFromScreen = 0.5;
@@ -309,9 +309,12 @@ function setupShaders() {
         vec4 textureColor = texture2D(uTexture, vUV);
         if(blendMode == 1) {
           gl_FragColor = vec4(textureColor.rgb * finalColor, textureColor.a);
-        } else {
+        } else if(blendMode == 2) {
           vec3 blendedColor = (1.0 - NL) * finalColor + NL * textureColor.rgb;
           gl_FragColor = vec4(blendedColor, textureColor.a * vColorAlpha);
+        } else {
+          gl_FragColor = (1.0 - textureColor.a) * vec4(finalColor, vColorAlpha) + textureColor.a * textureColor;
+          gl_FragColor.a = vColorAlpha;
         }
       }
   `;
@@ -448,11 +451,11 @@ function renderTriangles() {
   gl.vertexAttribPointer(vertexNAttrib, 1, gl.FLOAT, false, 0, 0);
   gl.bindBuffer(gl.ARRAY_BUFFER, colorAlphaBuffer);
   gl.vertexAttribPointer(vertexAlphaAttrib, 1, gl.FLOAT, false, 0, 0);
-      gl.bindBuffer(gl.ARRAY_BUFFER, vertexNormalBuffer);
-      gl.vertexAttribPointer(vertexNormalAttrib, 3, gl.FLOAT, false, 0, 0);
-      gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-      gl.vertexAttribPointer(vertexUVAttrib, 2, gl.FLOAT, false, 0, 0);
-      viewMat = mat4.create();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexNormalBuffer);
+  gl.vertexAttribPointer(vertexNormalAttrib, 3, gl.FLOAT, false, 0, 0);
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+  gl.vertexAttribPointer(vertexUVAttrib, 2, gl.FLOAT, false, 0, 0);
+  viewMat = mat4.create();
   mat4.lookAt(viewMat, Eye, Target, ViewUp);
   // Calculations for projectMat 
   var canvas = document.getElementById("myWebGLCanvas");
@@ -519,6 +522,38 @@ function updateViewingCoordinatesDisplay() {
   if (currentViewUp) {
     currentViewUp.textContent = 
       `X: ${ViewUp[0].toFixed(3)}, Y: ${ViewUp[1].toFixed(3)}, Z: ${ViewUp[2].toFixed(3)}`;
+  }
+}
+
+// Function to update the texture blend mode display
+function updateBlendModeDisplay() {
+  var blendModeName = document.getElementById("blendModeName");
+  var blendModeFormula = document.getElementById("blendModeFormula");
+  
+  if (!blendModeName || !blendModeFormula) return;
+  
+  switch(blendMode) {
+    case 0:
+      blendModeName.textContent = "Alpha Blending";
+      blendModeFormula.innerHTML = 
+        "Color = (1 - αₜ) × LightColor + αₜ × TextureColor<br>" +
+        "where αₜ is the texture alpha channel";
+      break;
+    case 1:
+      blendModeName.textContent = "Multiply";
+      blendModeFormula.innerHTML = 
+        "Color = TextureColor × LightColor<br>" +
+        "Component-wise multiplication of RGB channels";
+      break;
+    case 2:
+      blendModeName.textContent = "Fresnel-like Blending";
+      blendModeFormula.innerHTML = 
+        "Color = (1 - N·L) × LightColor + (N·L) × TextureColor<br>" +
+        "where N·L is the dot product of normal and light vector";
+      break;
+    default:
+      blendModeName.textContent = "Unknown Mode";
+      blendModeFormula.textContent = "";
   }
 }
 
@@ -617,6 +652,9 @@ function main() {
   var dz = Target[2] - Eye[2];
   yawAngle = Math.atan2(dx, dz);
   pitchAngle = Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+  
+  // Initialize blend mode display
+  updateBlendModeDisplay();
   
   document.addEventListener('keydown', function (e) {
     switch (e.key) {
@@ -754,10 +792,12 @@ function main() {
         }
         break;
       case "b":
-        blendMode = 1 - blendMode;
+        blendMode = (blendMode + 1) % 3;
+        updateBlendModeDisplay();
         break;
       case "B":
-        blendMode = 1 - blendMode;
+        blendMode = (blendMode + 2) % 3;
+        updateBlendModeDisplay();
         break;
       case "Escape":
         Eye[0] = 0.5;
