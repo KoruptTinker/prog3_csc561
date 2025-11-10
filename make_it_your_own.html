@@ -2,10 +2,10 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Prog 4: Ellipsoids </title>
+    <title>Prog 4: Cat Vortex!</title>
 
     <script type="text/javascript" src="gl-matrix-min.js"></script>
-    <script type="text/javascript" src="ellipsoids_part.js"></script>
+    <script type="text/javascript" src="make_it_your_own.js"></script>
     <style>
       body {
         margin: 0;
@@ -35,7 +35,7 @@
       }
       #infoPanel {
         position: fixed;
-        top: 20px;
+        bottom: 20px;
         left: 20px;
         background-color: white;
         padding: 18px;
@@ -74,6 +74,13 @@
         background-color: #666;
         color: white;
       }
+      .actionButton {
+        background-color: #2196F3;
+        color: white;
+      }
+      .actionButton:hover {
+        background-color: #1976D2;
+      }
       .navButton:hover {
         background-color: #555;
       }
@@ -81,18 +88,23 @@
   </head>
   <body onload="main();">
     <div id="infoPanel">
-      <h2>Part 2: Ellipsoid Showcase</h2>
-      <p>This pass renders analytic ellipsoids with per-pixel Phong lighting, letting you compare the smooth implicit surfaces against the mesh-based triangle sets.</p>
-      <p>Use WASDQE plus the arrow keys to orbit and strafe. Press <strong>e</strong> / <strong>q</strong> to move vertically and tap <strong>b</strong> to toggle blend modes for side-by-side shading experiments.</p>
+      <h2>Gallery of Cat Chaos</h2>
+      <p>For true experience please have your sound on. Kick back and watch the full parade.</p>
+      <p>And don’t forget to toggle the spin a few times </p>
+      <div style="margin-top: 12px;">
+        <button class="actionButton" onclick="startCatSpin();">Unleash the Cat Vortex</button>
+      </div>
       <div style="margin-top: 12px;">
         <button class="navButton" onclick="window.location.href='third_part.html'">&lt;&lt; Part 3</button>
-        <button class="navButton" style="background-color: #9C27B0;" onclick="window.location.href='make_it_your_own.html'">Make It Your Own &gt;&gt;</button>
+        <button class="navButton" style="background-color: #9C27B0;" onclick="window.location.href='index.html'">Exit</button>
       </div>
     </div>
     <div id="canvasContainer">
       <canvas id="myImageCanvas" width="800" height="800"></canvas>
       <canvas id="myWebGLCanvas" width="800" height="800"></canvas>
     </div>
+    <audio id="oiiaFastAudio" src="https://korupttinker.github.io/prog4_csc561/oiia_fast.mp3" preload="auto"></audio>
+    <audio id="oiiaSlowAudio" src="https://korupttinker.github.io/prog4_csc561/oiia_slow.mp3" preload="auto"></audio>
   </body>
 </html>
 
