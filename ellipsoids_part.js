@@ -3,7 +3,7 @@ const WIN_Z = 0;
 const WIN_LEFT = 0; const WIN_RIGHT = 1;
 const WIN_BOTTOM = 0; const WIN_TOP = 1;
 const INPUT_TRIANGLES_URL = "https://ncsucgclass.github.io/prog4/triangles.json";
-const INPUT_ELLIPSOIDS_URL = "https://ncsucgclass.github.io/prog3/ellipsoids.json";
+const INPUT_ELLIPSOIDS_URL = "https://ncsucgclass.github.io/prog4/ellipsoids.json";
 const INPUT_LIGHT_URL = "https://ncsucgclass.github.io/prog3/lights.json";
 const INPUT_TEXTURES_URL = "https://ncsucgclass.github.io/prog4/";
 
@@ -132,6 +132,69 @@ function getTextureImage(textureName) {
   });
 }
 
+function makeEllipsoid(currEllipsoid, numLongSteps) {
+  var numLatSteps = Math.max(2, Math.floor(numLongSteps / 2));
+  var vertices = [];
+  var normals = [];
+  var uvs = [];
+  var triangles = [];
+
+  for (var latStep = 0; latStep <= numLatSteps; latStep++) {
+    var theta = Math.PI * latStep / numLatSteps;
+    var sinTheta = Math.sin(theta);
+    var cosTheta = Math.cos(theta);
+
+    for (var longStep = 0; longStep <= numLongSteps; longStep++) {
+      var phi = 2 * Math.PI * longStep / numLongSteps;
+      var sinPhi = Math.sin(phi);
+      var cosPhi = Math.cos(phi);
+
+      var unitX = sinTheta * cosPhi;
+      var unitY = cosTheta;
+      var unitZ = sinTheta * sinPhi;
+
+      vertices.push(
+        currEllipsoid.x + currEllipsoid.a * unitX,
+        currEllipsoid.y + currEllipsoid.b * unitY,
+        currEllipsoid.z + currEllipsoid.c * unitZ
+      );
+
+      var nx = unitX / currEllipsoid.a;
+      var ny = unitY / currEllipsoid.b;
+      var nz = unitZ / currEllipsoid.c;
+      var len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+      if (len > 0) {
+        nx /= len;
+        ny /= len;
+        nz /= len;
+      }
+      normals.push(nx, ny, nz);
+
+      var u = longStep / numLongSteps;
+      var v = latStep / numLatSteps;
+      uvs.push(u, v);
+    }
+  }
+
+  var vertsPerRow = numLongSteps + 1;
+  for (var lat = 0; lat < numLatSteps; lat++) {
+    for (var lon = 0; lon < numLongSteps; lon++) {
+      var first = lat * vertsPerRow + lon;
+      var second = first + vertsPerRow;
+
+      triangles.push(first, second, first + 1);
+      triangles.push(second, second + 1, first + 1);
+    }
+  }
+
+  return {
+    vertices: vertices,
+    normals: normals,
+    uvs: uvs,
+    triangles: triangles
+  };
+}
+
 function setupWebGL() {
 
   var imageCanvas = document.getElementById("myImageCanvas");
@@ -246,7 +309,78 @@ function loadTriangles() {
         opaqueSetIndices.push(setIdx);
       }
     }
+    var inputEllipsoids = getJSONFile(INPUT_ELLIPSOIDS_URL, "ellipsoids");
+    if (inputEllipsoids != String.null) {
+      for (var whichEllipsoid = 0; whichEllipsoid < inputEllipsoids.length; whichEllipsoid++) {
+        var ellipsoid = inputEllipsoids[whichEllipsoid];
+        var ellipsoidMesh = makeEllipsoid(ellipsoid, 32);
+        var setData = {
+          startIdx: totalTriangles * 3,
+          alpha: ellipsoid.alpha
+        };
 
+        textureNameArray.push(ellipsoid.texture);
+        var vertexCount = ellipsoidMesh.vertices.length / 3;
+        var ellipsoidUVs = ellipsoidMesh.uvs;
+
+        for (var vertIdx = 0; vertIdx < vertexCount; vertIdx++) {
+          var vBase = vertIdx * 3;
+          var uvBase = vertIdx * 2;
+          coordArray.push(
+            ellipsoidMesh.vertices[vBase],
+            ellipsoidMesh.vertices[vBase + 1],
+            ellipsoidMesh.vertices[vBase + 2]
+          );
+          colorDiffuseArray.push(
+            ellipsoid.diffuse[0],
+            ellipsoid.diffuse[1],
+            ellipsoid.diffuse[2]
+          );
+          colorAmbientArray.push(
+            ellipsoid.ambient[0],
+            ellipsoid.ambient[1],
+            ellipsoid.ambient[2]
+          );
+          colorSpecArray.push(
+            ellipsoid.specular[0],
+            ellipsoid.specular[1],
+            ellipsoid.specular[2]
+          );
+          colorNArray.push(ellipsoid.n);
+          colorAlphaArray.push(ellipsoid.alpha);
+          vertexNormalArray.push(
+            ellipsoidMesh.normals[vBase],
+            ellipsoidMesh.normals[vBase + 1],
+            ellipsoidMesh.normals[vBase + 2]
+          );
+          uvArray.push(
+            ellipsoidUVs[uvBase],
+            ellipsoidUVs[uvBase + 1]
+          );
+        }
+
+        for (var triIdx = 0; triIdx < ellipsoidMesh.triangles.length; triIdx += 3) {
+          indexArray.push(
+            ellipsoidMesh.triangles[triIdx] + indexOffset,
+            ellipsoidMesh.triangles[triIdx + 1] + indexOffset,
+            ellipsoidMesh.triangles[triIdx + 2] + indexOffset
+          );
+          totalTriangles++;
+        }
+
+        indexOffset += vertexCount;
+        setData.endIdx = totalTriangles * 3;
+        setData.avgPos = [ellipsoid.x, ellipsoid.y, ellipsoid.z];
+        modelMat.push(mat4.create());
+        TriangleSetInfo.push(setData);
+        var ellipsoidSetIdx = TriangleSetInfo.length - 1;
+        if (setData.alpha < 0.999) {
+          transparentSetIndices.push(ellipsoidSetIdx);
+        } else {
+          opaqueSetIndices.push(ellipsoidSetIdx);
+        }
+      }
+    }
     vertexBuffer = gl.createBuffer();
     indexBuffer = gl.createBuffer();
     colorDiffuseBuffer = gl.createBuffer();
