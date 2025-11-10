@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Prog 3: Part 3 – Transparency</title>
+
+    <script type="text/javascript" src="gl-matrix-min.js"></script>
+    <script type="text/javascript" src="third_part.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        overflow: hidden;
+      }
+      #canvasContainer {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      canvas {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      #myImageCanvas {
+        position: absolute;
+        z-index: 0;
+      }
+      #myWebGLCanvas {
+        position: relative;
+        z-index: 1;
+      }
+      #infoPanel {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background-color: white;
+        padding: 18px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        width: 340px;
+        max-width: calc(100vw - 80px);
+        z-index: 1000;
+      }
+      #infoPanel h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+      #infoPanel p {
+        margin: 6px 0;
+        color: #666;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      #infoPanel code {
+        font-size: 13px;
+        background: #f5f5f5;
+        padding: 2px 4px;
+        border-radius: 3px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px 5px 5px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+      .navButton {
+        background-color: #666;
+        color: white;
+      }
+      .navButton:hover {
+        background-color: #555;
+      }
+    </style>
+  </head>
+  <body onload="main();">
+    <div id="infoPanel">
+      <h2>Part 3: Transparency Passes</h2>
+      <p>Opaque geometry is rendered first with depth writes enabled. Transparent sets are then sorted back-to-front and drawn with depth writes disabled (<code>gl.depthMask(false)</code>) so blended fragments don't block the scene behind them.</p>
+      <p>Use the same keyboard controls as the lighting view (WASDQE + arrow keys) for navigation. Press <strong>b</strong> to cycle blend modes.</p>
+      <div style="margin-top: 12px;">
+        <button class="navButton" onclick="window.location.href='second_part.html'">&lt;&lt; Lighting View</button>
+      </div>
+    </div>
+    <div id="canvasContainer">
+      <canvas id="myImageCanvas" width="800" height="800"></canvas>
+      <canvas id="myWebGLCanvas" width="800" height="800"></canvas>
+    </div>
+  </body>
+</html>
+
